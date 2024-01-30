@@ -4,21 +4,13 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { autoFetch } from './custom';
 
 const Gallery = () => {
-  const [page, setPage] = React.useState(0);
+  const [page, setPage] = React.useState(1);
   const { searchTerm } = useGlobalContext();
   const fetchingFn = async ({ pageParam }) => {
     var res = await autoFetch(`${searchTerm}&page=${page}`);
     return res;
   };
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
+  const { data, isFetching, status } = useInfiniteQuery({
     queryKey: ['images', searchTerm, page],
     queryFn: fetchingFn,
     initialPageParam: 0,
