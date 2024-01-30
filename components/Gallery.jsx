@@ -42,7 +42,6 @@ const Gallery = () => {
     </section>
   ) : (
     <>
-      {console.log(data)}
       {data.pages.map((page, i) => (
         <div key={i} className="image-container">
           {page?.data.results.map((img) => {
@@ -56,15 +55,8 @@ const Gallery = () => {
       ))}
       <div className="image-container">
         <button className="btn" onClick={() => nextPage()}>
-          {isFetchingNextPage
-            ? 'Loading more...'
-            : hasNextPage
-            ? 'Load More'
-            : 'Nothing more to load'}
+          Load More
         </button>
-      </div>
-      <div className="image-container">
-        {isFetching && !isFetchingNextPage ? 'Fetching...' : null}
       </div>
     </>
   );
