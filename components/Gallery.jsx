@@ -1,42 +1,65 @@
-import React from 'react'
-import { useAutoFetch } from './custom'
+import React from 'react';
+import { useGlobalContext } from './Context';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { autoFetch } from './custom';
 
 const Gallery = () => {
-  var myResults = useAutoFetch()
-  if (myResults.isLoading) {
-    return (
-      <section className="image-container">
-        <h4>Loading...</h4>
-      </section>
-    )
-  }
-  if (myResults.isError) {
-    return (
-      <section className="image-container">
-        <h4>There was an error...</h4>
-      </section>
-    )
-  }
+  const [page, setPage] = React.useState(0);
+  const { searchTerm } = useGlobalContext();
+  const fetchingFn = async ({ pageParam }) => {
+    var res = await autoFetch(`${searchTerm}&page=${page}`);
+    return res;
+  };
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status,
+  } = useInfiniteQuery({
+    queryKey: ['images', searchTerm, page],
+    queryFn: fetchingFn,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, pages) => lastPage.nextCursor,
+  });
+  const total = data?.pages ? [0]?.data?.total_pages : 0;
+  const nextPage = () => {
+    var newPage = page + 1;
+    if (newPage > total) {
+      newPage = 0;
+    }
+    setPage(newPage);
+  };
+  return status === 'pending' || isFetching ? (
+    <section className="image-container">
+      <h4>Loading...</h4>
+    </section>
+  ) : status === 'error' ? (
+    <section className="image-container">
+      <h4>There was an error...</h4>
+    </section>
+  ) : (
+    <>
+      {data.pages.map((page, i) => (
+        <div key={i} className="image-container">
+          {page?.data.results.map((img) => {
+            return (
+              <div key={img.id}>
+                <img src={img?.urls?.regular} alt={img.id} className="img" />
+              </div>
+            );
+          })}
+        </div>
+      ))}
+      <div className="image-container">
+        <button className="btn" onClick={() => nextPage()}>
+          Load More
+        </button>
+      </div>
+    </>
+  );
+};
 
-  const results = myResults.data.results
-  if (results.length < 1) {
-    return (
-      <section className="image-container">
-        <h4>No results found...</h4>
-      </section>
-    )
-  }
-  return (
-    <div className="image-container">
-      {myResults.data.results.map((img) => {
-        return (
-          <div key={img.id}>
-            <img src={img?.urls?.regular} alt={img.id} className="img" />
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-export default Gallery
+export default Gallery;
