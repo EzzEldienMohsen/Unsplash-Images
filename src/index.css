@@ -64,7 +64,7 @@ html {
   --backgroundColor: var(--grey-50);
   --textColor: var(--grey-900);
   --dark-mode-bg-color: #333;
-  --dark-mode-text-color: #f0f0f0;
+  --dark-mode-text-color: var(--primary-800);
 }
 .dark-theme {
   --backgroundColor: var(--dark-mode-bg-color);
