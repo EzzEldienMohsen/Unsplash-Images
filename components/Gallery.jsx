@@ -4,10 +4,10 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { autoFetch } from './custom';
 
 const Gallery = () => {
+  const [page, setPage] = React.useState(0);
   const { searchTerm } = useGlobalContext();
   const fetchingFn = async ({ pageParam }) => {
-    var res = await autoFetch(`${searchTerm}&page=${pageParam}`);
-    console.log(pageParam);
+    var res = await autoFetch(`${searchTerm}&page=${page}`);
     return res;
   };
   const {
@@ -19,12 +19,19 @@ const Gallery = () => {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ['images', searchTerm],
+    queryKey: ['images', searchTerm, page],
     queryFn: fetchingFn,
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => lastPage.nextCursor,
   });
-
+  const total = data?.pages ? [0]?.data?.total_pages : 0;
+  const nextPage = () => {
+    var newPage = page + 1;
+    if (newPage > total) {
+      newPage = 0;
+    }
+    setPage(newPage);
+  };
   return status === 'pending' || isFetching ? (
     <section className="image-container">
       <h4>Loading...</h4>
@@ -48,11 +55,7 @@ const Gallery = () => {
         </div>
       ))}
       <div className="image-container">
-        <button
-          className="btn"
-          onClick={() => fetchNextPage()}
-          disabled={!hasNextPage || isFetchingNextPage}
-        >
+        <button className="btn" onClick={() => nextPage()}>
           {isFetchingNextPage
             ? 'Loading more...'
             : hasNextPage
